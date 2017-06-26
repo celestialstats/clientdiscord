@@ -8,6 +8,12 @@ This is the Discord client for listening to Discord server activity.
 
 Coming soon!
 
+## Setup
+
+Copy `set_env_clients.sh.example` to `set_env_clients.sh` and fill in the appropriate fields. Use this script to configure your environmental variables.
+
+You can then start the bot by executing `python __main__.py`.
+
 ## Permissions
 
 This client currently requires the following Discord [permissions](https://discordapp.com/developers/docs/topics/permissions#bitwise-permission-flags):

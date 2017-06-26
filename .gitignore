@@ -92,3 +92,6 @@ ENV/
 
 # Logging
 logs/
+
+# Environmental Variables
+set_env_clients.sh
