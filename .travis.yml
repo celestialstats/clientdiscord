@@ -12,11 +12,8 @@ before_install:
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
   - docker login --username "$DOCKER_HUB_USERNAME" --password "$DOCKER_HUB_PASSWORD"
 
-install:
+script:
   - docker build --no-cache -t celestialstats/clientdiscord:$TAG .
-
-#script:
-#- docker run -t -i celestialstats/clientdiscord:latest python -m unittest discover -v /cs/clientdiscord/
 
 after_success:
 - docker push celestialstats/clientdiscord:$TAG
