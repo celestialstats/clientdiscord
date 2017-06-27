@@ -8,7 +8,6 @@ import discord
 import os
 import argparse
 import boto3
-import uuid
 
 from argparse import RawTextHelpFormatter
 
@@ -76,8 +75,8 @@ def main(args=None):
     # Do argument parsing here (eg. with argparse) and anything else
     # you want your project to do.
 
-    LOGGER.info("Started Celestial Stats Discord Client v" + __version__)
-    LOGGER.info("Current System Time: " + datetime.datetime.now().isoformat())
+    LOGGER.info('Started Celestial Stats Discord Client v%s', __version__)
+    LOGGER.info('Current System Time: %s', datetime.datetime.now().isoformat())
 
     session = boto3.Session(
         aws_access_key_id=args.aws_access_key_id,
@@ -86,36 +85,36 @@ def main(args=None):
     )
 
     ddb = session.client('dynamodb')
-    ddb.put_item(
-        TableName=args.log_table_name,
-        Item={
-            'LogUuid': {'S': uuid.uuid4().hex},
-            'AuthorID': {'N': '108030288910729216'},
-            'ChannelID': {'N': '108030304773586944'},
-            'Content': {'S': 'Man bloodbourne is confusing.'},
-            'ServerID': {'N': '108030304773586944'},
-            'ServerType': {'S': 'DISCORD'},
-            'Timestamp': {'N': '1497924425357'},
-            'Type': {'S': 'MESSAGE'},
-        }
-    )
-
-    """
     client = discord.Client()
 
     @client.event
     async def on_ready():
-        print('Logged in as')
-        print(client.user.name)
-        print(client.user.id)
-        print('------')
+        LOGGER.info('Connected to Discord: %s (ID: %s)', client.user.name,
+                    client.user.id)
 
     @client.event
     async def on_message(message):
-        print(message)
+        utc_ts = message.timestamp.replace(tzinfo=datetime.timezone.utc)
+        utc_ts = utc_ts.timestamp()
+        ddb.put_item(
+            TableName=args.log_table_name,
+            Item={
+                'SnowflakeID': {'N': message.id},
+                'AuthorID': {'N': message.author.id},
+                'AuthorDisplayName': {'S': message.author.display_name},
+                'AuthorUsername': {'S': message.author.name + '#' +
+                                   message.author.discriminator},
+                'ChannelID': {'N': message.channel.id},
+                'ChannelName': {'S': message.channel.name},
+                'Content': {'S': message.content},
+                'ServerID': {'N': message.server.id},
+                'Timestamp': {'N': str(utc_ts)},
+                'Type': {'S': 'MESSAGE'},
+            }
+        )
 
     client.run(args.bot_token)
-    """
+
 
 if __name__ == "__main__":
     main()
