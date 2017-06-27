@@ -8,7 +8,11 @@ This is the Discord client for listening to Discord server activity.
 
 Coming soon!
 
-## Setup
+## Setup - Docker
+
+`
+
+## Setup - Command Line
 
 Copy `set_env_clients.sh.example` to `set_env_clients.sh` and fill in the appropriate fields. Use this script to configure your environmental variables.
 

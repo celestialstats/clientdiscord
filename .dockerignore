@@ -1,0 +1,11 @@
+.git/
+logs/
+__pycache__/
+.dockerignore
+.gitignore
+.travis.yml
+Dockerfile
+set_env_clients.sh
+set_env_clients.sh.example
+docker-compose.yml
+docker-compose.yml.example

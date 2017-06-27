@@ -95,3 +95,4 @@ logs/
 
 # Environmental Variables
 set_env_clients.sh
+docker-compose.yml
