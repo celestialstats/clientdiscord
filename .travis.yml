@@ -3,7 +3,7 @@ sudo: required
 language: python
 
 python:
-  - "3.6"
+  - 3.6
 
 services:
   - docker
@@ -16,4 +16,4 @@ script:
   - docker build --no-cache -t celestialstats/clientdiscord:$TAG .
 
 after_success:
-- docker push celestialstats/clientdiscord:$TAG
+  - docker push celestialstats/clientdiscord:$TAG

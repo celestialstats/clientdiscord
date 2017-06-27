@@ -4,7 +4,6 @@ services:
         image: celestialstats/clientdiscord:latest
         container_name: cs_clientdiscord
         hostname: cs_clientdiscord
-        build: .
         environment:
             - DISCORD_CLIENTID=
             - DISCORD_CLIENTSECRET=
