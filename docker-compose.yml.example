@@ -8,9 +8,10 @@ services:
             - DISCORD_CLIENTID=
             - DISCORD_CLIENTSECRET=
             - DISCORD_BOTTOKEN=
-            - AWS_ACCESS_KEY_ID=
-            - AWS_SECRET_ACCESS_KEY=
-            - AWS_DEFAULT_REGION=us-east-1
-            - LOG_TABLE_NAME=cs_sb_discord_inc_logs
+            - RMQ_USERNAME=
+            - RMQ_PASSWORD=
+            - RMQ_EXCHANGE_NAME=incoming_logs
+            - RMQ_HOSTNAME=
+            - RMQ_PORT=5672
         volumes:
             - /opt/cs/clientdiscord/logs:/cs/clientdiscord/logs
