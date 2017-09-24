@@ -9,6 +9,7 @@ import os
 import argparse
 import json
 import pika
+import textwrap
 
 from argparse import RawTextHelpFormatter
 
@@ -38,6 +39,36 @@ parser.add_argument(
     metavar='DISCORD_BOTTOKEN',
     help='Discord Bot Token'
 )
+parser.add_argument(
+    '--rmq-username',
+    default=os.environ.get('RMQ_USERNAME'),
+    metavar='RMQ_USERNAME',
+    help='RabbitMQ Username'
+)
+parser.add_argument(
+    '--rmq-password',
+    default=os.environ.get('RMQ_PASSWORD'),
+    metavar='RMQ_PASSWORD',
+    help='RabbitMQ Password'
+)
+parser.add_argument(
+    '--rmq-exchange-name',
+    default=os.environ.get('RMQ_EXCHANGE_NAME'),
+    metavar='RMQ_EXCHANGE_NAME',
+    help='RabbitMQ Exchange for Incoming Logs'
+)
+parser.add_argument(
+    '--rmq-hostname',
+    default=os.environ.get('RMQ_HOSTNAME'),
+    metavar='RMQ_HOSTNAME',
+    help='RabbitMQ Hostname'
+)
+parser.add_argument(
+    '--rmq-port',
+    default=os.environ.get('RMQ_PORT'),
+    metavar='RMQ_PORT',
+    help='RabbitMQ Port'
+)
 
 
 def main(args=None):
@@ -53,9 +84,10 @@ def main(args=None):
     LOGGER.info('Current System Time: %s', datetime.datetime.now().isoformat())
 
     connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host='192.168.1.180',
-        port=5672,
-        credentials=pika.PlainCredentials(username="SUPER_SECRET_USER_HERE", password="SUPER_SECRET_PASS_HERE")
+        args.rmq_hostname,
+        int(args.rmq_port),
+        '/',
+        pika.PlainCredentials(args.rmq_username, args.rmq_password)
     ))
     channel = connection.channel()
     client = discord.Client()
@@ -69,24 +101,39 @@ def main(args=None):
     async def on_message(message):
         utc_ts = message.timestamp.replace(tzinfo=datetime.timezone.utc)
         utc_ts = utc_ts.timestamp()
-        item = {
-            'SnowflakeID': {'N': message.id},
-            'AuthorID': {'N': message.author.id},
-            'AuthorDisplayName': {'S': message.author.display_name},
-            'AuthorUsername': {'S': message.author.name + '#' +
-                                    message.author.discriminator},
-            'ChannelID': {'N': message.channel.id},
-            'ChannelName': {'S': message.channel.name},
-            'Content': {'S': message.content},
-            'ServerID': {'N': message.server.id},
-            'Timestamp': {'N': str(utc_ts)},
-            'Type': {'S': 'MESSAGE'},
-        }
-        LOGGER.info(json.dumps(item))
-        channel.basic_publish(exchange='incoming_logs',
-                              routing_key='',
-                              properties=pika.BasicProperties(headers={'chat-type': 'discord'}),
-                              body=json.dumps(item))
+        LOGGER.info(
+            '{}\\{} - {}: {}'.format(
+                message.server.name,
+                message.channel.name,
+                message.author.display_name,
+                textwrap.shorten(
+                    message.content,
+                    width=40,
+                    placeholder="[...]"
+                )
+            )
+        )
+        channel.basic_publish(
+            exchange=args.rmq_exchange_name,
+            routing_key='',
+            properties=pika.BasicProperties(
+                headers={'chat-type': 'discord'}
+            ),
+            body=json.dumps({
+                'SnowflakeID': int(message.id),
+                'AuthorID': int(message.author.id),
+                'AuthorDisplayName': message.author.display_name,
+                'AuthorUsername': '%s#%s' % (message.author.name,
+                                             message.author.discriminator),
+                'ChannelID': int(message.channel.id),
+                'ChannelName': message.channel.name,
+                'Content': message.content,
+                'ServerID': int(message.server.id),
+                'ServerName': message.server.name,
+                'Timestamp': float(utc_ts),
+                'Type': 'MESSAGE',
+            })
+        )
 
     client.run(args.bot_token)
 
