@@ -1,19 +1,17 @@
 sudo: required
-
 language: python
-
 python:
-  - 3.6
-
+- 3.6
 services:
-  - docker
-
+- docker
 before_install:
-  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
-  - docker login --username "$DOCKER_HUB_USERNAME" --password "$DOCKER_HUB_PASSWORD"
-
+- export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH
+  ; fi`
+- docker login --username "$DOCKER_HUB_USERNAME" --password "$DOCKER_HUB_PASSWORD"
 script:
-  - docker build --no-cache -t celestialstats/clientdiscord:$TAG .
-
+- docker build --no-cache -t celestialstats/clientdiscord:$TAG .
 after_success:
-  - docker push celestialstats/clientdiscord:$TAG
+- docker push celestialstats/clientdiscord:$TAG
+notifications:
+  slack:
+    secure: Zq9M1Wvh08zjgGhMJ+s750DFsCDZP5IUQgn/ih87z0znKSlr8i9MHKtaMcLHJO5Nd0T4n6d36s6j6V+Him1jRb6CiLtWs58JcgUD+VgdvsENyN9k936oozVGzyzB4E8ALk03mkkX+vcDuuFNMN7I/rZj4Cg1C6yC8BqKk2v5kzJ52Ei33RTfD49/+mNo3WbWYO8cjoIFDygz9ZZ7S7etzG62fLxlrnbVmEp60yV30ma09siLUl4UrvDS4mpH4gdHzzkqu9cMJ0tVWfZB0l8gVoxSicGjSm28ofPVEiY8rl5O7sRf25nmE1ltUgpDwavYt7PPo2zydnIpNwLkzoMNeO9Bl42TqRMsxd8Rk49fTS2dFQPLdbkx++GVpVd1R/zXaEuT+8ycJhoB4yvhJz+Jiz4oNj4nhdTJwPwdNCkrqbVuXiRHvklpTbzx3+N+x4HRXwI6m57OPXpJV+l0w/ldljgHix6BXXel6fGhwZJ7K5MDdnzt5tHJEoWXrHC+mStm4YrGY/dzecCwQ42nlq0IkzKmlXXwgpHJoyzLOB4Kb9ZBDgRjzw0uoZ0IZZyRLtmzHk0LCsrrYEc/zzlNZKxMS0mENjwG+FgnyrLIbDNIlOydYwxTkx050CEvIO3mwCuo2IM2Ok7iCsjYA9OxZ3jpKHN7SVh4xyXjNDC73aODZEU=
