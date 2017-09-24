@@ -7,7 +7,8 @@ import logger
 import discord
 import os
 import argparse
-import boto3
+import json
+import pika
 
 from argparse import RawTextHelpFormatter
 
@@ -37,30 +38,6 @@ parser.add_argument(
     metavar='DISCORD_BOTTOKEN',
     help='Discord Bot Token'
 )
-parser.add_argument(
-    '--aws-default-region',
-    default=os.environ.get('AWS_DEFAULT_REGION'),
-    metavar='AWS_DEFAULT_REGION',
-    help='AWS Default Region'
-)
-parser.add_argument(
-    '--aws-access-key-id',
-    default=os.environ.get('AWS_ACCESS_KEY_ID'),
-    metavar='AWS_ACCESS_KEY_ID',
-    help='AWS Access Key Id'
-)
-parser.add_argument(
-    '--aws-secret-access-key',
-    default=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-    metavar='AWS_SECRET_ACCESS_KEY',
-    help='AWS Secret Access Key'
-)
-parser.add_argument(
-    '--log-table-name',
-    default=os.environ.get('LOG_TABLE_NAME'),
-    metavar='LOG_TABLE_NAME',
-    help='AWS DynamoDB Table Name for Incoming Logs'
-)
 
 
 def main(args=None):
@@ -72,19 +49,15 @@ def main(args=None):
         args = sys.argv[1:]
     args = parser.parse_args()
 
-    # Do argument parsing here (eg. with argparse) and anything else
-    # you want your project to do.
-
     LOGGER.info('Started Celestial Stats Discord Client v%s', __version__)
     LOGGER.info('Current System Time: %s', datetime.datetime.now().isoformat())
 
-    session = boto3.Session(
-        aws_access_key_id=args.aws_access_key_id,
-        aws_secret_access_key=args.aws_secret_access_key,
-        region_name=args.aws_default_region,
-    )
-
-    ddb = session.client('dynamodb')
+    connection = pika.BlockingConnection(pika.ConnectionParameters(
+        host='192.168.1.180',
+        port=5672,
+        credentials=pika.PlainCredentials(username="SUPER_SECRET_USER_HERE", password="SUPER_SECRET_PASS_HERE")
+    ))
+    channel = connection.channel()
     client = discord.Client()
 
     @client.event
@@ -96,22 +69,24 @@ def main(args=None):
     async def on_message(message):
         utc_ts = message.timestamp.replace(tzinfo=datetime.timezone.utc)
         utc_ts = utc_ts.timestamp()
-        ddb.put_item(
-            TableName=args.log_table_name,
-            Item={
-                'SnowflakeID': {'N': message.id},
-                'AuthorID': {'N': message.author.id},
-                'AuthorDisplayName': {'S': message.author.display_name},
-                'AuthorUsername': {'S': message.author.name + '#' +
-                                   message.author.discriminator},
-                'ChannelID': {'N': message.channel.id},
-                'ChannelName': {'S': message.channel.name},
-                'Content': {'S': message.content},
-                'ServerID': {'N': message.server.id},
-                'Timestamp': {'N': str(utc_ts)},
-                'Type': {'S': 'MESSAGE'},
-            }
-        )
+        item = {
+            'SnowflakeID': {'N': message.id},
+            'AuthorID': {'N': message.author.id},
+            'AuthorDisplayName': {'S': message.author.display_name},
+            'AuthorUsername': {'S': message.author.name + '#' +
+                                    message.author.discriminator},
+            'ChannelID': {'N': message.channel.id},
+            'ChannelName': {'S': message.channel.name},
+            'Content': {'S': message.content},
+            'ServerID': {'N': message.server.id},
+            'Timestamp': {'N': str(utc_ts)},
+            'Type': {'S': 'MESSAGE'},
+        }
+        LOGGER.info(json.dumps(item))
+        channel.basic_publish(exchange='incoming_logs',
+                              routing_key='',
+                              properties=pika.BasicProperties(headers={'chat-type': 'discord'}),
+                              body=json.dumps(item))
 
     client.run(args.bot_token)
 
