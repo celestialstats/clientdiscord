@@ -69,6 +69,12 @@ parser.add_argument(
     metavar='RMQ_PORT',
     help='RabbitMQ Port'
 )
+parser.add_argument(
+    '--rmq-heartbeat',
+    default=os.environ.get('RMQ_HEARTBEAT'),
+    metavar='RMQ_HEARTBEAT',
+    help='RabbitMQ Heartbeat Interval'
+)
 
 
 def main(args=None):
@@ -88,7 +94,7 @@ def main(args=None):
         port=int(args.rmq_port),
         virtual_host='/',
         credentials=pika.PlainCredentials(args.rmq_username, args.rmq_password),
-        heartbeat_interval=5
+        heartbeat_interval=int(args.rmq_heartbeat)
     ))
     channel = connection.channel()
     client = discord.Client()

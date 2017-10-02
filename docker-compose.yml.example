@@ -13,5 +13,6 @@ services:
             - RMQ_EXCHANGE_NAME=
             - RMQ_HOSTNAME=
             - RMQ_PORT=
+            - RMQ_HEARTBEAT=
         volumes:
             - /opt/cs/clientdiscord/logs:/cs/clientdiscord/logs
