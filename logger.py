@@ -27,7 +27,7 @@ def get_logger(name):
         },
         "handlers": {
             "console": {
-                "level": "DEBUG",
+                "level": "INFO",
                 "class": "logging.StreamHandler",
                 "formatter": "standard",
                 "stream": "ext://sys.stdout"
@@ -44,7 +44,7 @@ def get_logger(name):
         },
         "loggers": {
             "": {
-                "level": "INFO",
+                "level": "DEBUG",
                 "handlers": [
                     "console",
                     "file"

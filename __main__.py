@@ -84,10 +84,11 @@ def main(args=None):
     LOGGER.info('Current System Time: %s', datetime.datetime.now().isoformat())
 
     connection = pika.BlockingConnection(pika.ConnectionParameters(
-        args.rmq_hostname,
-        int(args.rmq_port),
-        '/',
-        pika.PlainCredentials(args.rmq_username, args.rmq_password)
+        host=args.rmq_hostname,
+        port=int(args.rmq_port),
+        virtual_host='/',
+        credentials=pika.PlainCredentials(args.rmq_username, args.rmq_password),
+        heartbeat_interval=5
     ))
     channel = connection.channel()
     client = discord.Client()
